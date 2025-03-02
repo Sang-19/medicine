@@ -1,45 +1,42 @@
-name: CI
+name: Build Medicine Tracker APK
 on:
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Updated to 22.04
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4  # Updated to v4
+    - uses: actions/checkout@v4
 
-      - name: Get Date
-        id: get-date
-        run: echo "date=$(date -u "+%Y%m%d")" >> $GITHUB_ENV
-        shell: bash
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
 
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v4  # Updated to v4
-        with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+    - name: Cache Buildozer deps
+      uses: actions/cache@v4
+      with:
+        path: .buildozer_global
+        key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
-      - name: Cache Buildozer directory
-        uses: actions/cache@v4  # Updated to v4
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-${{ env.date }}-${{ hashFiles('buildozer.spec') }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install buildozer==1.5.0
+        pip install cython==0.29.33
 
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: buildozer android debug
-          buildozer_version: stable
+    - name: Build APK
+      run: |
+        buildozer android debug
+      env:
+        BUILDOZER_WARN_ON_ROOT: 0
 
-      - name: Build Docker image
-        run: docker build --no-cache -t my-app .  # Ensures a fresh build
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4  # Updated to v4
-        with:
-          name: package
-          path: ${{ steps.buildozer.outputs.filename }}
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: bin/*.apk
