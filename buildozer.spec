@@ -25,7 +25,7 @@ source.include_patterns = assets/*,images/*,data/*
 version = 0.1
 
 # (list) Application requirements
-requirements = python3,kivy==2.2.1,kivymd==1.1.1,pillow,python-dateutil,sdl2_ttf==2.0.15,certifi
+requirements = python3,kivy==2.2.1,kivymd==1.1.1,pillow,python-dateutil,sdl2_ttf==2.0.15,certifi,datetime
 
 # (str) Presplash of the application
 #presplash.filename = %(source.dir)s/data/presplash.png
